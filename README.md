@@ -1,16 +1,7 @@
 # Bower Server
 
-## Create package
+```sh
+env HEROKU_POSTGRESQL_RED_URL=$(heroku config:get HEROKU_POSTGRESQL_RED_URL -a app-name) ADMIN_REPO=https://github.com/owner/repo USER_AGENT=app-name PORT=5000 node index.js
+```
 
-    curl http://twitter-nest.heroku.com/packages -v -F 'name=jquery' -F 'url=git://github.com/jquery/jquery.git'
-
-## Find package
-
-    curl http://twitter-nest.heroku.com/packages/jquery
-      {"name":"jquery","url":"git://github.com/jquery/jquery.git"}
-
-## License
-
-Copyright 2012 Twitter, Inc.
-
-Licensed under the MIT License
+Where app-name is your heroku App Name and ADMIN_REPO is an optional url of the github repo with your adminstrative collaborators.
