@@ -44,7 +44,7 @@ export async function getPackageTable ({
       return await packageTable.findAll({ where: { name: { [Sequelize.Op.iLike]: `%${term}%` } }, order: Sequelize.literal('name DESC') })
     },
     async unregister (name) {
-      return await packageTable.destroy({ where: ['name = ?', name] })
+      return await packageTable.destroy({ where: { name: { [Sequelize.Op.eq]: name } } })
     }
   })
   // Item methods

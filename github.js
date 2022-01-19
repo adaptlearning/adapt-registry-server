@@ -2,21 +2,24 @@ import request from 'request'
 import gh from 'parse-github-url'
 import { USER_AGENT, ADMIN_REPO } from './constants.js'
 
+export async function isGitHub ({ url }) { return /:\/\/github.com\//.test(url) }
+
 export async function authorize ({
-  username,
   url,
+  username,
   token
-}) {
-  try {
-    // Check collaborators for the given repo
-    await checkCollaborators({ username, url, token })
-    // User is a collaborator on the given repo
-    console.log(username, 'is a collaborator')
-    return
-  } catch (err) {
-    // If no admin repo is specified, throw error immediately
-    if (!ADMIN_REPO) throw err
+} = {}) {
+  if (isGitHub(url)) {
+    try {
+      // Check collaborators for the given repo
+      await checkCollaborators({ username, url, token })
+      // User is a collaborator on the given repo
+      console.log(username, 'is a collaborator')
+      return 'collaborator'
+    } catch (err) {}
   }
+  // If no admin repo is specified, throw error immediately
+  if (!ADMIN_REPO) throw new Error('checkCollaborators error')
   // Check if the user is a collaborator on the admin repo
   await checkCollaborators({
     username,
@@ -24,7 +27,8 @@ export async function authorize ({
     token
   })
   // User is a collaborator on the admin repo
-  console.log(username, 'is an admin collaborator')
+  console.log(username, 'is an admin')
+  return 'admin'
 }
 
 async function checkCollaborators ({

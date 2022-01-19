@@ -35,9 +35,8 @@ export async function start ({
 
   // Register
   app.post('/packages', async (req, res) => {
-    const name = req.body.name
-    const url = req.body.url
-    console.log('Registering', name, url)
+    const { name, url } = req.body
+    console.log(`Registering ${name} ${url}`)
     const packageItem = packageTable.build({ name, url })
     try {
       await packageItem.validate()
@@ -58,7 +57,9 @@ export async function start ({
 
   // Rename
   app.get('/packages/rename/:username/:oldPluginName/:newPluginName', async (req, res) => {
-    const { username, oldPluginName, newPluginName, access_token: token } = req.params
+    const { username, oldPluginName, newPluginName } = req.params
+    const { access_token: token } = req.query
+    console.log(`Renaming ${oldPluginName} to ${newPluginName}`)
     try {
       const packageItem = await packageTable.find(oldPluginName)
       if (!packageItem) return res.sendStatus(404)
@@ -66,7 +67,7 @@ export async function start ({
       await authorize({ username, url, token })
       await packageItem.rename(newPluginName)
     } catch (err) {
-      console.error('Rename failed')
+      console.error('Rename failed', err)
       return res.sendStatus(500)
     }
     res.sendStatus(201)
@@ -74,8 +75,9 @@ export async function start ({
 
   // Unregister
   app.delete('/packages/:username/:pluginName', async (req, res) => {
-    const { username, pluginName, access_token: token } = req.params
-    console.log(req.params)
+    const { username, pluginName } = req.params
+    const { access_token: token } = req.query
+    console.log(`Unregister ${pluginName}`)
     try {
       const packageItem = await packageTable.find(pluginName)
       if (!packageItem) throw new Error(`${pluginName} not found`)
@@ -89,6 +91,26 @@ export async function start ({
       return res.sendStatus(404)
     }
     res.sendStatus(204)
+  })
+
+  // Authentication test
+  app.get('/authenticate/:username/:pluginName', async (req, res) => {
+    const { username, pluginName } = req.params
+    const { access_token: token } = req.query
+    console.log(`Authenticate ${username} for ${pluginName}`)
+    try {
+      const packageItem = await packageTable.find(pluginName)
+      if (!packageItem) throw new Error(`${pluginName} not found`)
+      const { url } = packageItem
+      const type = await authorize({ username, url, token })
+      console.log(`Successfully authenticated ${username} as ${type}`)
+      return res.send({
+        type
+      })
+    } catch (err) {
+      console.error('Authentication failed with error', err)
+      return res.sendStatus(404)
+    }
   })
 
   app.listen(port)
