@@ -1,16 +1,5 @@
 # Bower Server
 
-## Create package
-
-    curl http://twitter-nest.heroku.com/packages -v -F 'name=jquery' -F 'url=git://github.com/jquery/jquery.git'
-
-## Find package
-
-    curl http://twitter-nest.heroku.com/packages/jquery
-      {"name":"jquery","url":"git://github.com/jquery/jquery.git"}
-
-## License
-
-Copyright 2012 Twitter, Inc.
-
-Licensed under the MIT License
+```sh
+env HEROKU_POSTGRESQL_RED_URL=$(heroku config:get HEROKU_POSTGRESQL_RED_URL -a adapt-bower-repository) ADMIN_REPO=https://github.com/adaptlearning/adapt_framework USER_AGENT=adapt-bower-repository PORT=5000 node index.js
+```
