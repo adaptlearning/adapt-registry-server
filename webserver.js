@@ -104,9 +104,7 @@ export async function start ({
       const { url } = packageItem
       const type = await authorize({ username, url, token })
       console.log(`Successfully authenticated ${username} as ${type}`)
-      return res.send({
-        type
-      })
+      return res.send({ type })
     } catch (err) {
       console.error('Authentication failed with error', err)
       return res.sendStatus(404)

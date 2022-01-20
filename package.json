@@ -1,7 +1,7 @@
 {
   "name": "bower-server",
   "description": "Node port of the bower server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "dependencies": {
     "express": "^4.17.2",

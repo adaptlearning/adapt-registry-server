@@ -24,7 +24,8 @@ export async function getPackageTable ({
       },
       get () {
         // Return https:// instead of git:// urls, reference https://github.com/bower/bower/issues/2610
-        return this.getDataValue('url').replace('git://github.com', 'https://github.com')
+        const url = this.getDataValue('url').replace('git://github.com', 'https://github.com')
+        return (String(url).lastIndexOf('.git') !== -1) ? url : url + '.git'
       }
     },
     hits: {
