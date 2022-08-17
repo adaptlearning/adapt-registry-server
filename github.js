@@ -31,13 +31,14 @@ export async function authorize ({
   return 'admin'
 }
 
-async function checkCollaborators ({
+export async function checkCollaborators ({
   username,
   url,
   token
 }) {
+  if (!isGitHub(url)) throw new Error('checkCollaborators passed a non-github url')
   url = 'https://api.github.com/repos/' + gh(url).repo + '/collaborators/' + username
-  const res = await getCollaborators({ url, token })
+  const res = await getUrl({ url, token })
   const code = res.statusCode
   if (code !== 204 && code !== 301 && code !== 302 && code !== 307) {
     throw new Error('checkCollaborators error')
@@ -45,17 +46,83 @@ async function checkCollaborators ({
   // Follow a redirect if necessary
   if (code === 301 || code === 302 || code === 307) {
     url = res.headers.location
-    return await checkCollaborators({ username, url, token })
+    return await getUrl({ username, url, token })
   }
   // GitHub returns 204 if user is collaborator
+  return true
 }
 
-async function getCollaborators ({ url, token }) {
+export async function getVersions ({ url, token }) {
+  if (!isGitHub(url)) throw new Error('getVersions passed a non-github url')
+  url = `https://api.github.com/repos/${gh(url).repo}/releases?per_page=100`
+  let res = await getUrl({ url, token })
+  const code = res.statusCode
+  if (code !== 200 & code !== 204 && code !== 301 && code !== 302 && code !== 307) {
+    throw new Error('getVersions error')
+  }
+  // Follow a redirect if necessary
+  if (code === 301 || code === 302 || code === 307) {
+    url = res.headers.location
+    res = await getUrl({ url, token })
+  }
+  return JSON.parse(res.body)
+}
+
+export async function getVersion ({ url, token, version = 'latest' }) {
+  if (!isGitHub(url)) throw new Error('getVersions passed a non-github url')
+  url = `https://api.github.com/repos/${gh(url).repo}/releases/${version}`
+  let res = await getUrl({ url, token })
+  const code = res.statusCode
+  if (code !== 200 & code !== 204 && code !== 301 && code !== 302 && code !== 307) {
+    throw new Error('getVersions error')
+  }
+  // Follow a redirect if necessary
+  if (code === 301 || code === 302 || code === 307) {
+    url = res.headers.location
+    res = await getUrl({ url, token })
+  }
+  return JSON.parse(res.body)
+}
+
+export async function getPackageJSON ({ url, version = 'master' }) {
+  const res = await getFirst({
+    urls: [
+      `https://raw.githubusercontent.com/${gh(url).repo}/${version}/package.json`,
+      `https://raw.githubusercontent.com/${gh(url).repo}/${version}/bower.json`
+    ]
+  })
+  try {
+    return res && JSON.parse(res.body)
+  } catch (err) {
+    return null
+  }
+}
+
+export async function getFirst ({ urls }) {
+  for (let url of urls) {
+    let res = await getUrl({ url })
+    const code = res.statusCode
+    if (code !== 200 & code !== 204 && code !== 301 && code !== 302 && code !== 307) {
+      continue
+    }
+    // Follow a redirect if necessary
+    if (code === 301 || code === 302 || code === 307) {
+      url = res.headers.location
+      res = await getUrl({ url })
+    }
+    return res
+  }
+  return null
+}
+
+export async function getUrl ({ url, token, method = 'GET' }) {
   return new Promise((resolve, reject) => {
+    const headers = { 'User-Agent': USER_AGENT }
+    if (token) headers.Authorization = 'token ' + token
     request({
       url,
-      method: 'GET',
-      headers: { Authorization: 'token ' + token, 'User-Agent': USER_AGENT },
+      method,
+      headers,
       followRedirect: false
     }, function (err, res) {
       if (err) return reject(err)
