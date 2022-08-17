@@ -39,13 +39,13 @@ export async function getPackageTable ({
       return packageTable.findAll({ order: Sequelize.literal('name DESC') })
     },
     async find (name) {
-      return await packageTable.findOne({ where: { name: { [Sequelize.Op.eq]: name } } })
+      return await packageTable.findOne({ where: { name: { [Sequelize.Op.iLike]: name } } })
     },
     async search (term) {
       return await packageTable.findAll({ where: { name: { [Sequelize.Op.iLike]: `%${term}%` } }, order: Sequelize.literal('name DESC') })
     },
     async unregister (name) {
-      return await packageTable.destroy({ where: { name: { [Sequelize.Op.eq]: name } } })
+      return await packageTable.destroy({ where: { name: { [Sequelize.Op.iLike]: name } } })
     }
   })
   // Item methods
@@ -69,4 +69,51 @@ export async function getPackageTable ({
   } catch (err) {
   }
   return packageTable
+}
+
+export async function getNPMTable ({
+  connectionString = CONNECTION_STRING
+} = {}) {
+  const sequelize = new Sequelize(connectionString, { dialectOptions: { ssl: { require: true, rejectUnauthorized: false } } })
+  await sequelize.authenticate()
+  // Define table
+  const npmTable = sequelize.define('NPMItem', {
+    name: {
+      type: Sequelize.STRING,
+      unique: true,
+      allowNull: false
+    },
+    data: {
+      type: Sequelize.JSONB
+    }
+  })
+  // Table methods
+  Object.assign(npmTable, {
+    async all () {
+      return npmTable.findAll({ order: Sequelize.literal('name DESC') })
+    },
+    async find (name) {
+      return await npmTable.findOne({ where: { name: { [Sequelize.Op.iLike]: name } } })
+    },
+    async search (term) {
+      return await npmTable.findAll({ where: { name: { [Sequelize.Op.iLike]: `%${term}%` } }, order: Sequelize.literal('name DESC') })
+    },
+    async unregister (name) {
+      return await npmTable.destroy({ where: { name: { [Sequelize.Op.iLike]: name } } })
+    }
+  })
+  // Item methods
+  Object.assign(npmTable.prototype, {
+    async update (data) {
+      this.data = data
+      await this.save()
+    }
+  })
+  await npmTable.sync()
+  // Create index
+  try {
+    await sequelize.getQueryInterface().addIndex('NPMItems', ['name'])
+  } catch (err) {
+  }
+  return npmTable
 }

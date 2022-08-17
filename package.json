@@ -1,9 +1,10 @@
 {
-  "name": "bower-server",
-  "description": "Node port of the bower server",
-  "version": "0.2.0",
+  "name": "adapt-registry-server",
+  "description": "Adapt plugin registry server",
+  "version": "0.3.0",
   "type": "module",
   "dependencies": {
+    "compression": "^1.7.4",
     "express": "^4.17.2",
     "parse-github-url": "^1.0.2",
     "pg": "^8.7.1",
