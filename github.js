@@ -84,22 +84,6 @@ export async function getVersion ({ url, token, version = 'latest' }) {
   return JSON.parse(res.body)
 }
 
-export async function getContents ({ url, token, version = 'latest' }) {
-  if (!isGitHub(url)) throw new Error('getContent passed a non-github url')
-  url = `https://api.github.com/repos/${gh(url).repo}/contents?ref=${version}`
-  let res = await getUrl({ url, token })
-  const code = res.statusCode
-  if (code !== 200 & code !== 204 && code !== 301 && code !== 302 && code !== 307) {
-    throw new Error('getContent error')
-  }
-  // Follow a redirect if necessary
-  if (code === 301 || code === 302 || code === 307) {
-    url = res.headers.location
-    res = await getUrl({ url, token })
-  }
-  return JSON.parse(res.body)
-}
-
 export async function getPackageJSON ({ url, version = 'master' }) {
   const res = await getFirst({
     urls: [

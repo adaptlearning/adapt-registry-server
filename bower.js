@@ -1,4 +1,3 @@
-
 import { authorize } from './github.js'
 
 export function attachBowerApi (app, packageTable) {
