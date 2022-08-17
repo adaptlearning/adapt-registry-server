@@ -7,7 +7,7 @@ export async function getRemoteRegistryEntry ({ name, version = '' }) {
   let res = await getUrl({ url })
   const code = res.statusCode
   if (code !== 200 & code !== 204 && code !== 301 && code !== 302 && code !== 307) {
-    throw new Error('getContent error')
+    throw new Error('getRemoteRegistryEntry error')
   }
   // Follow a redirect if necessary
   if (code === 301 || code === 302 || code === 307) {
@@ -54,7 +54,7 @@ export function attachNPMApi (app, packageTable, npmTable) {
   // Get named
   app.get('/npm/:name', async (req, res) => {
     let { name } = req.params
-    if (name.includes('/')) name = name.split('/')[1]
+    if (name.includes('%2f')) name = name.replace('%2f', '/')
     const packageItem = await packageTable.find(name)
     if (!packageItem) {
       const remoteEntry = await getRemoteRegistryEntry({ name })
@@ -116,7 +116,7 @@ export function attachNPMApi (app, packageTable, npmTable) {
   // Get named+versioned
   app.get('/npm/:name/:version', async (req, res) => {
     let { name, version } = req.params
-    if (name.includes('/')) name = name.split('/')[1]
+    if (name.includes('%2f')) name = name.replace('%2f', '/')
     const packageItem = await packageTable.find(name)
     if (!packageItem) {
       const remoteEntry = await getRemoteRegistryEntry({ name, version })
