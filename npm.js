@@ -70,7 +70,6 @@ export function attachNPMApi (app, packageTable, npmTable) {
       if (npmItem?.data?.version === latestVersionName) {
         return res.send(npmItem.data)
       }
-      // fetch 100 versions + paginate entries, keep full history
       const versions = await getVersions({ url, token: GITHUB_TOKEN })
       const packageJSON = await getPackageJSON({ url })
       const output = {
