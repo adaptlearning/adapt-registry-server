@@ -54,7 +54,10 @@ export function attachBowerApi (app, packageTable) {
       const packageItem = await packageTable.find(oldPluginName)
       if (!packageItem) return res.sendStatus(404)
       const { url } = packageItem
-      await authorize({ username, url, token })
+      if (!await authorize({ username, url, token })) {
+        console.error('Rename failed unable to authorise')
+        return res.sendStatus(500)
+      }
       await packageItem.rename(newPluginName)
     } catch (err) {
       console.error('Rename failed', err)
@@ -72,7 +75,10 @@ export function attachBowerApi (app, packageTable) {
       const packageItem = await packageTable.find(pluginName)
       if (!packageItem) throw new Error(`${pluginName} not found`)
       const { url } = packageItem
-      await authorize({ username, url, token })
+      if (!await authorize({ username, url, token })) {
+        console.error('Delete failed unable to authorise')
+        return res.sendStatus(500)
+      }
       const count = await packageTable.unregister(pluginName)
       if (count <= 0) return res.sendStatus(404)
       console.log('Successfully deleted package ' + pluginName)
@@ -93,6 +99,10 @@ export function attachBowerApi (app, packageTable) {
       if (!packageItem) throw new Error(`${pluginName} not found`)
       const { url } = packageItem
       const type = await authorize({ username, url, token })
+      if (!type) {
+        console.error('Authenticate failed unable to authorise')
+        return res.sendStatus(500)
+      }
       console.log(`Successfully authenticated ${username} as ${type}`)
       return res.send({ type })
     } catch (err) {

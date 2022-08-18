@@ -7,7 +7,8 @@ export async function getRemoteRegistryEntry ({ name, version = '' }) {
   let res = await getUrl({ url })
   const code = res.statusCode
   if (code !== 200 & code !== 204 && code !== 301 && code !== 302 && code !== 307) {
-    throw new Error('getRemoteRegistryEntry error')
+    console.log(`Remote error attempting to find ${name}`)
+    return null
   }
   // Follow a redirect if necessary
   if (code === 301 || code === 302 || code === 307) {
@@ -22,7 +23,8 @@ export async function searchRemoteRegistry ({ term }) {
   let res = await getUrl({ url })
   const code = res.statusCode
   if (code !== 200 & code !== 204 && code !== 301 && code !== 302 && code !== 307) {
-    throw new Error('searchRemoteRegistry error')
+    console.log(`Remote error attempting to search for  ${term}`)
+    return { objects: [] }
   }
   // Follow a redirect if necessary
   if (code === 301 || code === 302 || code === 307) {

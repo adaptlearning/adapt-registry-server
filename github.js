@@ -12,20 +12,23 @@ export async function authorize ({
   if (isGitHub(url)) {
     try {
       // Check collaborators for the given repo
-      await checkCollaborators({ username, url, token })
+      if (!await checkCollaborators({ username, url, token })) return
       // User is a collaborator on the given repo
       console.log(username, 'is a collaborator')
       return 'collaborator'
     } catch (err) {}
   }
   // If no admin repo is specified, throw error immediately
-  if (!ADMIN_REPO) throw new Error('checkCollaborators error')
+  if (!ADMIN_REPO) {
+    console.log('No ADMIN_REPO defined')
+    return false
+  }
   // Check if the user is a collaborator on the admin repo
-  await checkCollaborators({
+  if (!await checkCollaborators({
     username,
     url: ADMIN_REPO,
     token
-  })
+  })) return false
   // User is a collaborator on the admin repo
   console.log(username, 'is an admin')
   return 'admin'
@@ -36,12 +39,16 @@ export async function checkCollaborators ({
   url,
   token
 }) {
-  if (!isGitHub(url)) throw new Error('checkCollaborators passed a non-github url')
+  if (!isGitHub(url)) {
+    console.log('checkCollaborators passed a non-github url')
+    return false
+  }
   url = 'https://api.github.com/repos/' + gh(url).repo + '/collaborators/' + username
   const res = await getUrl({ url, token })
   const code = res.statusCode
   if (code !== 204 && code !== 301 && code !== 302 && code !== 307) {
-    throw new Error('checkCollaborators error')
+    console.log('Could not check collaborators');
+    return false;
   }
   // Follow a redirect if necessary
   if (code === 301 || code === 302 || code === 307) {
@@ -53,12 +60,16 @@ export async function checkCollaborators ({
 }
 
 export async function getVersions ({ url, token }) {
-  if (!isGitHub(url)) throw new Error('getVersions passed a non-github url')
+  if (!isGitHub(url)) {
+    console.log('getVersions passed a non-github url')
+    return false
+  }
   url = `https://api.github.com/repos/${gh(url).repo}/releases?per_page=100`
   let res = await getUrl({ url, token })
   const code = res.statusCode
   if (code !== 200 & code !== 204 && code !== 301 && code !== 302 && code !== 307) {
-    throw new Error('getVersions error')
+    console.log(`Could not get versions for ${url}`)
+    return false
   }
   // Follow a redirect if necessary
   if (code === 301 || code === 302 || code === 307) {
@@ -69,12 +80,16 @@ export async function getVersions ({ url, token }) {
 }
 
 export async function getVersion ({ url, token, version = 'latest' }) {
-  if (!isGitHub(url)) throw new Error('getVersions passed a non-github url')
+  if (!isGitHub(url)) {
+    console.log('getVersion passed a non-github url')
+    return false
+  }
   url = `https://api.github.com/repos/${gh(url).repo}/releases/${version}`
   let res = await getUrl({ url, token })
   const code = res.statusCode
   if (code !== 200 & code !== 204 && code !== 301 && code !== 302 && code !== 307) {
-    throw new Error('getVersions error')
+    console.log(`Could not get version for ${url} ${version}`)
+    return false
   }
   // Follow a redirect if necessary
   if (code === 301 || code === 302 || code === 307) {
