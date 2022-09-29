@@ -1,7 +1,7 @@
 {
   "name": "adapt-registry-server",
   "description": "Adapt plugin registry server",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "type": "module",
   "dependencies": {
     "compression": "^1.7.4",

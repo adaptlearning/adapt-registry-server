@@ -190,10 +190,8 @@ export function attachNPMApi (app, packageTable, npmTable) {
       const url = `${NPM_REGISTRY}/${name}/-/${source}`
       return res.redirect(302, url)
     }
-    if (!packageItem) {
-      console.log(`Name ${name} Source ${source} not found`)
-      return res.sendStatus(404)
-    }
+    console.log(`Name ${name} Source ${source} not found`)
+    return res.sendStatus(404)
   })
 
   // Search
