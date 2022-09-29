@@ -59,9 +59,11 @@ export function attachNPMApi (app, packageTable, npmTable) {
     if (name.includes('%2f')) name = name.replace('%2f', '/')
     const packageItem = await packageTable.find(name)
     if (!packageItem) {
-      const remoteEntry = await getRemoteRegistryEntry({ name })
-      if (!remoteEntry) return res.sendStatus(404)
-      return res.send(remoteEntry)
+      const url = `${NPM_REGISTRY}/${name}/`
+      return res.redirect(302, url)
+      // const remoteEntry = await getRemoteRegistryEntry({ name })
+      // if (!remoteEntry) return res.sendStatus(404)
+      // return res.send(remoteEntry)
     }
     await packageItem.hit()
     const url = packageItem.url
@@ -120,11 +122,12 @@ export function attachNPMApi (app, packageTable, npmTable) {
     if (name.includes('%2f')) name = name.replace('%2f', '/')
     const packageItem = await packageTable.find(name)
     if (!packageItem) {
-      const remoteEntry = await getRemoteRegistryEntry({ name, version })
-      if (!remoteEntry) return res.sendStatus(404)
-      return res.send(remoteEntry)
+      const url = `${NPM_REGISTRY}/${name}/${version}`
+      return res.redirect(302, url)
+      // const remoteEntry = await getRemoteRegistryEntry({ name, version })
+      // if (!remoteEntry) return res.sendStatus(404)
+      // return res.send(remoteEntry)
     }
-    await packageItem.hit()
     const url = packageItem.url
     try {
       const latestVersion = await getVersion({ url, token: GITHUB_TOKEN })
@@ -178,6 +181,21 @@ export function attachNPMApi (app, packageTable, npmTable) {
     }
   })
 
+  // Source
+  app.get('/npm/:name/-/:source/', async (req, res) => {
+    let { name, source } = req.params
+    if (name.includes('%2f')) name = name.replace('%2f', '/')
+    const packageItem = await packageTable.find(name)
+    if (!packageItem) {
+      const url = `${NPM_REGISTRY}/${name}/-/${source}`
+      return res.redirect(302, url)
+    }
+    if (!packageItem) {
+      console.log(`Name ${name} Source ${source} not found`)
+      return res.sendStatus(404)
+    }
+  })
+
   // Search
   app.get('/npm/-/v1/search/', async (req, res) => {
     let {
@@ -192,7 +210,7 @@ export function attachNPMApi (app, packageTable, npmTable) {
     size = Math.max(Math.min(250, size), 0)
     const npmItems = await npmTable.search(text)
     const remote = await searchRemoteRegistry(text)
-    const localNames = npmItems.map((npmItem) => npmItem.name.toLowerCase());
+    const localNames = npmItems.map((npmItem) => npmItem.name.toLowerCase())
     const remoteObjects = remote.objects.filter(obj => obj.name && !localNames.includes(obj.name.toLowerCase()))
     const localObjects = npmItems.map(npmItem => {
       const author = gh(npmItem.data.repository?.url.replace('git:', 'https:'))?.owner
@@ -209,7 +227,6 @@ export function attachNPMApi (app, packageTable, npmTable) {
         }
       }
     })
-
     const unfilteredObjects = localObjects.concat(remoteObjects)
     res.send({
       objects: unfilteredObjects.slice(from, size),

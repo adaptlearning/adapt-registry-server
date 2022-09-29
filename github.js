@@ -47,8 +47,8 @@ export async function checkCollaborators ({
   const res = await getUrl({ url, token })
   const code = res.statusCode
   if (code !== 204 && code !== 301 && code !== 302 && code !== 307) {
-    console.log('Could not check collaborators');
-    return false;
+    console.log('Could not check collaborators')
+    return false
   }
   // Follow a redirect if necessary
   if (code === 301 || code === 302 || code === 307) {
@@ -68,7 +68,7 @@ export async function getVersions ({ url, token }) {
   let res = await getUrl({ url, token })
   const code = res.statusCode
   if (code !== 200 & code !== 204 && code !== 301 && code !== 302 && code !== 307) {
-    console.log(`Could not get versions for ${url}`)
+    console.log(`Could not get versions for ${url}, ${res.status}`)
     return false
   }
   // Follow a redirect if necessary
@@ -88,7 +88,7 @@ export async function getVersion ({ url, token, version = 'latest' }) {
   let res = await getUrl({ url, token })
   const code = res.statusCode
   if (code !== 200 & code !== 204 && code !== 301 && code !== 302 && code !== 307) {
-    console.log(`Could not get version for ${url} ${version}`)
+    console.log(`Could not get version for ${url} ${version}, ${res.statusMessage}`)
     return false
   }
   // Follow a redirect if necessary
