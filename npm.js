@@ -193,6 +193,19 @@ export function attachNPMApi (app, packageTable, npmTable) {
     console.log(`Name ${name} Source ${source} not found`)
     return res.sendStatus(404)
   })
+  
+  // Source + organisation
+  app.get('/npm/:org/:name/-/:source/', async (req, res) => {
+    let { org, name, source } = req.params
+    if (name.includes('%2f')) name = name.replace('%2f', '/')
+    const packageItem = await packageTable.find(name)
+    if (!packageItem) {
+      const url = `${NPM_REGISTRY}/${org}/${name}/-/${source}`
+      return res.redirect(302, url)
+    }
+    console.log(`Name ${org}/${name} Source ${source} not found`)
+    return res.sendStatus(404)
+  })
 
   // Search
   app.get('/npm/-/v1/search/', async (req, res) => {
