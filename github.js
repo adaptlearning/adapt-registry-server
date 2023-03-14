@@ -12,10 +12,11 @@ export async function authorize ({
   if (isGitHub(url)) {
     try {
       // Check collaborators for the given repo
-      if (!await checkCollaborators({ username, url, token })) return
-      // User is a collaborator on the given repo
-      console.log(username, 'is a collaborator')
-      return 'collaborator'
+      if (await checkCollaborators({ username, url, token })) {
+        // User is a collaborator on the given repo
+        console.log(username, 'is a collaborator')
+        return 'collaborator'
+      }
     } catch (err) {}
   }
   // If no admin repo is specified, throw error immediately
